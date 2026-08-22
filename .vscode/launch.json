@@ -1,0 +1,45 @@
+{
+  // Use 'pwa-node' for the modern Node debugger
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run ts-node",
+      "runtimeExecutable": "ts-node",
+      "cwd": "${workspaceFolder}",
+      "args": []
+    },
+    {
+      "name": "Launch (ts-node)",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "program": "${workspaceFolder}/app.ts",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+    },
+    {
+      "name": "Launch (compiled)",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/dist/app.js",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+    },
+    {
+      "name": "Attach to Process",
+      "type": "pwa-node",
+      "request": "attach",
+      "processId": "${command:PickProcess}",
+      "restart": true,
+    }
+  ]
+}
