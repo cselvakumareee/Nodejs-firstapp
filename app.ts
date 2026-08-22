@@ -26,8 +26,10 @@ import shopRoutes from './routes/shop';
 import { rootDir } from "./util/path";
 
 import path from "path/win32";
+import { pageNotFoundController } from "./controller/error";
+
 const app = express();
-app.set('view engine', 'pug');
+app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -38,9 +40,7 @@ app.use('/admin', adminRoutes);
 
 app.use(shopRoutes);
 
-app.use((req, res, next) => {
-  res.status(404).sendFile(path.join(rootDir, 'views', 'page-not-found.html'));
-});
+app.use(pageNotFoundController);
 
 app.listen(3000, () => {
   console.log('Server running at http://localhost:3000/');
