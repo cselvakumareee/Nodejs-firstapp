@@ -1,16 +1,1 @@
-[
-    {
-        "title": "book1",
-        "imageUrl": "jasfksajfl",
-        "description": "ksasnacsnck",
-        "price": "1",
-        "id": "0.9580857584597251"
-    },
-    {
-        "title": "book2",
-        "imageUrl": "ksafasn",
-        "description": "naknkfnksanf",
-        "price": "1",
-        "id": "0.8799965749815746"
-    }
-]
+[{"_id":"6a97065e01e04920acb66691","title":"db1111","imageUrl":"jafksjaf","description":"skjsncsn","price":"1"},{"_id":"6a981642b750022748845505","title":"db2","imageUrl":"test image","description":"test","price":"1"}]

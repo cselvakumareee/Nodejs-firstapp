@@ -2,8 +2,9 @@ import { getProductById, getProductsFromFile, product } from "../models/product"
 import { addProduct, CartProduct, deleteCart, getCart } from "../models/cart";
 
 
-export const getProducts = (req: any, res: any, next: any) => {
-  const prods = getProductsFromFile();
+/** Loads all products and renders the product listing page. */
+export const getProducts = async(req: any, res: any, next: any) => {
+  const prods = await getProductsFromFile();
 
   res.render('shop/product-list', {
     prods,
@@ -12,10 +13,10 @@ export const getProducts = (req: any, res: any, next: any) => {
   });
 };
 
-export const getProduct = (req: any, res: any, next: any) => {
+/** Loads one product by ID or redirects when the product does not exist. */
+export const getProduct = async(req: any, res: any, next: any) => {
   const productId = req.params.productId;
-  const prods = getProductsFromFile();
-  const product = getProductById(productId);
+  const product = await getProductById(productId);
   console.log('product', product);
   if (!product) {
     return res.redirect('/products');
@@ -28,9 +29,10 @@ export const getProduct = (req: any, res: any, next: any) => {
   });
 };
 
-export const getIndex = (req: any, res: any, next: any) => {
-  const prods = getProductsFromFile();
-
+/** Loads products and renders the shop home page. */
+export const getIndex = async (req: any, res: any, next: any) => {
+  const prods = await getProductsFromFile();
+  console.log('prods', prods);
   res.render('shop/index', {
     prods,
     pageTitle: 'Shop',
@@ -49,17 +51,19 @@ export const getIndex = (req: any, res: any, next: any) => {
 //   });
 // };
 
-export const postCartController = (req: any, res: any, next: any) => {
+/** Adds a selected product to the cart and redirects to the cart page. */
+export const postCartController = async (req: any, res: any, next: any) => {
   const productId = req.body.productId;
   console.log('req', req.body);
-  const product = getProductById(productId);
+  const product = await getProductById(productId);
   console.log('product', product);
   if (product) {
-    addProduct(productId, product.price || 0);
+    await addProduct(productId, product.price || 0);
   }
   res.redirect('/cart');
 };
 
+/** Renders the checkout page. */
 export const checkoutController = (req: any, res: any, next: any) => {
   
   res.render('shop/checkout', {
@@ -68,6 +72,7 @@ export const checkoutController = (req: any, res: any, next: any) => {
   });
 };
 
+/** Renders the orders page. */
 export const ordersController = (req: any, res: any, next: any) => {
   
   res.render('shop/orders', {
@@ -76,12 +81,13 @@ export const ordersController = (req: any, res: any, next: any) => {
   });
 };
 
-export const getCartController = (req: any, res: any, next: any) => {
+/** Loads cart contents with their matching products and renders the cart page. */
+export const getCartController = async (req: any, res: any, next: any) => {
   const cart = getCart();
-  const products = getProductsFromFile();
+  const products = await getProductsFromFile();
   const cartProducts = [];
   for(let actProd of products) {
-    let cartProductData = cart.products.find((prod: CartProduct) => prod.id === actProd.id);
+    let cartProductData = cart.products.find((prod: CartProduct) => prod._id === actProd._id);
     if(cartProductData) {
       cartProducts.push({productData:actProd, qty: cartProductData.qty});
     }
@@ -93,11 +99,12 @@ export const getCartController = (req: any, res: any, next: any) => {
   })
 }
 
-export const postDeleteController = (req: any, res: any, next: any) => {
+/** Removes a selected product from the cart and redirects to the cart page. */
+export const postDeleteController = async (req: any, res: any, next: any) => {
   const productId = req.body.productId;
-  const product = getProductById(productId);
+  const product = await getProductById(productId);
   if(product?.price) {
-    deleteCart(productId, product.price);
+    await deleteCart(productId, product.price);
   }
   res.redirect('/cart');  
 }

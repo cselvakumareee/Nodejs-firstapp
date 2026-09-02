@@ -1,6 +1,7 @@
 import { deleteCart } from "../models/cart";
 import { deleteProduct, editProduct, getProductById, getProductsFromFile, product } from "../models/product";
 
+/** Renders the add-product form. */
 export const getAddProduct = (req: any, res: any, next: any) => {
   console.log('middleware 2');
   res.render('admin/edit-product', {
@@ -10,21 +11,23 @@ export const getAddProduct = (req: any, res: any, next: any) => {
   });
 };
 
+/** Creates a product from the submitted form data and redirects to the shop. */
 export const postAddProduct = (req: any, res: any, next: any) => {
   console.log('body', req.body);
-  const receivedProduct = {id:null, title: req.body.title, imageUrl: req.body.imageUrl, description: req.body.description, price: req.body.price };
+  const receivedProduct = {_id:null, title: req.body.title, imageUrl: req.body.imageUrl, description: req.body.description, price: req.body.price };
   product(receivedProduct);
   res.redirect('/');
 };
 
-export const getEditProduct = (req: any, res: any, next: any) => {
+/** Loads an existing product into the edit form when edit mode is enabled. */
+export const getEditProduct = async (req: any, res: any, next: any) => {
   console.log("getEditProduct");
   const editMode = req.query.edit;
   if (!editMode) {
     return res.redirect("/");
   }
   const productId = req.params.productId;
-  const product = getProductById(productId);
+  const product = await getProductById(productId);
   if (product) {
     res.render("admin/edit-product", {
       pageTitle: "Edit Product",
@@ -35,9 +38,10 @@ export const getEditProduct = (req: any, res: any, next: any) => {
   }
 };
 
-export const adminProductsController = (req: any, res: any, next: any) => {
+/** Loads all products and renders the administrator product list. */
+export const adminProductsController = async(req: any, res: any, next: any) => {
   console.log('admin products controller');
-  const prods = getProductsFromFile();
+  const prods = await getProductsFromFile();
   res.render('admin/products', {
     prods,
     pageTitle: 'Admin Products',
@@ -48,19 +52,21 @@ export const adminProductsController = (req: any, res: any, next: any) => {
   });
 };
 
-export const postEditProduct = (req: any, res: any, next: any) => {
+/** Updates a product from submitted form data and redirects to the admin list. */
+export const postEditProduct = async(req: any, res: any, next: any) => {
   const productId = req.body.productId;
-  editProduct(productId, req.body.title, req.body.imageUrl, req.body.description, req.body.price);
-  res.redirect('/admin/products ');
+  await editProduct(productId, req.body.title, req.body.imageUrl, req.body.description, req.body.price);
+  res.redirect('/admin/products');
 }
 
-export const postDeleteProduct = (req: any, res: any, next: any) => {
+/** Deletes a product and removes its matching cart entry when applicable. */
+export const postDeleteProduct = async (req: any, res: any, next: any) => {
   const productId = req.body.productId;
   // const price = req.body.price;
-  const prods = getProductsFromFile();
-  const product = prods.find(prod => prod.id === productId);
+  const prods = await getProductsFromFile();
+  const product = prods?.find(prod => prod?._id === productId);
   const price = product?.price;
-  deleteProduct(productId);
+  await deleteProduct(productId);
   if(price){
     deleteCart(productId, price);
   }

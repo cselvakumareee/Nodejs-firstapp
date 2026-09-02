@@ -1,22 +1,5 @@
-// import http from "http";
-// import express from "express";
-
-// const app = express();
-// app.use((req, res, next) => {
-//   console.log('im a middleware');
-//   next();
-// })
-
-// app.use('/message',(req, res, next) => {
-//   console.log('im in a another middleware');
-//   res.send('Hello from express');
-// })
-
-// const server = http.createServer(app);
-
-// server.listen(3000, () => {
-//   console.log('Server running at http://localhost:3000/');
-// });
+import dns from 'node:dns/promises';
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 import http from "http";
 import express from "express";
@@ -27,6 +10,7 @@ import { rootDir } from "./util/path";
 
 import path from "path/win32";
 import { pageNotFoundController } from "./controller/error";
+import { mongoConnect } from "./util/database";
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -42,10 +26,8 @@ app.use(shopRoutes);
 
 app.use(pageNotFoundController);
 
-app.listen(3000, () => {
+mongoConnect(() => {
+  app.listen(3000, () => {
   console.log('Server running at http://localhost:3000/');
 });
-// const server = http.createServer(app);
-// server.listen(3000, () => {
-//   console.log('Server running at http://localhost:3000/');
-// });  
+});
