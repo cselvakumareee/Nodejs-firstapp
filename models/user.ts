@@ -1,41 +1,25 @@
-import { getDb } from "../util/database";
-import mongodb from "mongodb";
-import { Product } from "./product";
+import { TypeProduct } from "./product";
+import mongoose from "mongoose";
 
-export function createUser(userName: string, email: string, password: string) {
-  const db = getDb();
-  return db.collection("users").insertOne({ name: userName, email, password });
-}
+export const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  cart: {
+    items: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: "Product",
+        },
+        quantity: { type: Number, required: true },
+      },
+    ],
+  },
+});
 
-export async function getCart() {
-  const db = getDb();
-  return await db
-    .collection("users")
-    .findOne({ cart: { $exists: true } })
-    .then((user: any) => {
-      if (!user) {
-        return { items: [] };
-      }
-      return user.cart;
-    });
-}
-
-export async function getUserById(userId: string) {
-  const db = getDb();
-  return await db
-    .collection("users")
-    .findOne({ _id: new mongodb.ObjectId(userId) })
-    .then((user: any) => {
-      return user;
-    })
-    .catch((err: any) => {
-      console.error("Error fetching user by ID:", err);
-      throw err;
-    });
-}
-
-export async function addToCart(product: Product, userId: string) {
-  const user = await getUserById(userId);
+userSchema.methods.addToCart = function (product: TypeProduct) {
+  const user = this;
   if (!user) {
     throw new Error("User not found");
   }
@@ -46,88 +30,40 @@ export async function addToCart(product: Product, userId: string) {
   const updatedCartItems = [...user.cart.items];
   let newQuantity = 1;
   if (cartProductIndex >= 0) {
-    newQuantity = user.cart.items[cartProductIndex].quantity + 1;
+    newQuantity = this.cart.items[cartProductIndex].quantity + 1;
     updatedCartItems[cartProductIndex].quantity = newQuantity;
   } else {
     updatedCartItems.push({
-      productId: new mongodb.ObjectId(product._id),
+      productId: product._id,
       quantity: newQuantity,
     });
   }
   const updatedCart = {
     items: updatedCartItems,
   };
-  const db = getDb();
-  return await db
-    .collection("users")
-    .updateOne(
-      { _id: new mongodb.ObjectId(userId) },
-      { $set: { cart: updatedCart } },
-    );
-}
+  user.cart = updatedCart;
+  return user.save().catch((err: any) => {
+    console.error("Error saving user cart:", err);
+  });
+};
 
-export async function deleteCart(productId: string, userId: string) {
-  const db = getDb();
-  const cart = await getCart();
-  const updatedCart = { ...cart };
-  // const product = updatedCart.items.find(
-  //   (prod: { productId: string; quantity: number }) =>
-  //     prod.productId.toString() === productId,
-  // ); {
-  updatedCart.items = updatedCart.items.filter(
-    (p: { productId: string; quantity: number }) =>
-      p.productId.toString() !== productId,
+userSchema.methods.deleteCart = function (productId: string) {
+  const user = this;
+  const cartItems = user.cart.items.filter(
+    (item: { productId: string; quantity: number }) =>
+      item.productId.toString() !== productId,
   );
-  return await db
-    .collection("users")
-    .updateOne(
-      { _id: new mongodb.ObjectId(userId) },
-      { $set: { cart: updatedCart } },
-    );
-}
+  user.cart.items = cartItems;
+  return user.save().catch((err: any) => {
+    console.error("Error saving user cart:", err);
+  });
+};
 
-export async function addOrder(userId: string) {
-  const db = getDb();
-  const user = await getUserById(userId);
-  if (!user?.cart?.items?.length) {
-    throw new Error("Cannot create an order from an empty cart");
-  }
-  const cart = user.cart;
-  const products = await Promise.all(
-    cart.items.map(async (item: { productId: string; quantity: number }) => {
-      const product = await db.collection("products").findOne({
-        _id: new mongodb.ObjectId(item.productId),
-      });
-      return product ? { ...product, quantity: item.quantity } : null;
-    }),
-  );
-  const order = {
-    userId: new mongodb.ObjectId(userId),
-    items: products.filter((product) => product !== null),
-    name: user.name,
-    date: new Date(),
-  };
-  const result = await db.collection("orders").insertOne(order);
-  await db
-    .collection("users")
-    .updateOne(
-      { _id: new mongodb.ObjectId(userId) },
-      { $set: { cart: { items: [] } } },
-    );
-  return result;
-}
-
-export async function getOrder(userId: string) {
-  const db = getDb();
-  return await db
-    .collection("orders")
-    .find({ userId: new mongodb.ObjectId(userId) })
-    .toArray()
-    .then((orders: any) => {
-      return orders;
-    })
-    .catch((err: any) => {
-      console.error("Error fetching order:", err);
-      throw err;
-    });
-}
+userSchema.methods.clearCart = function () {
+  const user = this;
+  user.cart.items = [];
+  return user.save().catch((err: any) => {
+    console.error("Error clearing user cart:", err);
+  });
+};
+export const User = mongoose.model("User", userSchema);

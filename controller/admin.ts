@@ -1,12 +1,6 @@
 // import { deleteCart } from "../models/cart";
-import {
-  deleteProduct,
-  editProduct,
-  getProductById,
-  getProductsFromFile,
-  product,
-} from "../models/product";
-import { deleteCart } from "../models/user";
+import { product } from "../models/product";
+// import { deleteCart } from "../models/user";
 
 /** Renders the add-product form. */
 export const getAddProduct = (req: any, res: any, next: any) => {
@@ -20,14 +14,20 @@ export const getAddProduct = (req: any, res: any, next: any) => {
 /** Creates a product from the submitted form data and redirects to the shop. */
 export const postAddProduct = async (req: any, res: any, next: any) => {
   const receivedProduct = {
-    _id: null,
     title: req.body.title,
     imageUrl: req.body.imageUrl,
     description: req.body.description,
     price: req.body.price,
-    userId: req.user?._id,
+    userId: req.user._id,
   };
-  await product(receivedProduct);
+  await product
+    .create(receivedProduct)
+    .then(() => {
+      console.log("Product created successfully");
+    })
+    .catch((err: any) => {
+      console.error("Error creating product:", err);
+    });
   res.redirect("/");
 };
 
@@ -38,13 +38,13 @@ export const getEditProduct = async (req: any, res: any, next: any) => {
     return res.redirect("/");
   }
   const productId = req.params.productId;
-  const product = await getProductById(productId);
-  if (product) {
+  const prod = await product.findById(productId).exec();
+  if (prod) {
     res.render("admin/edit-product", {
       pageTitle: "Edit Product",
       path: "admin/edit-product",
       editing: editMode,
-      product: product,
+      product: prod,
     });
   }
 };
@@ -55,7 +55,17 @@ export const adminProductsController = async (
   res: any,
   next: any,
 ) => {
-  const prods = await getProductsFromFile();
+  const prods = await product
+    .find()
+    // .populate("userId")
+    .then((products) => {
+      console.log("fetched", products);
+      return products;
+    })
+    .catch((err) => {
+      console.error("Error fetching products:", err);
+      return [];
+    });
   res.render("admin/products", {
     prods,
     pageTitle: "Admin Products",
@@ -69,27 +79,36 @@ export const adminProductsController = async (
 /** Updates a product from submitted form data and redirects to the admin list. */
 export const postEditProduct = async (req: any, res: any, next: any) => {
   const productId = req.body.productId;
-  await editProduct(
-    productId,
-    req.body.title,
-    req.body.imageUrl,
-    req.body.description,
-    req.body.price,
-  );
+  await product
+    .findByIdAndUpdate(productId, {
+      title: req.body.title,
+      imageUrl: req.body.imageUrl,
+      description: req.body.description,
+      price: req.body.price,
+    })
+    .then(() => {
+      console.log("Product updated successfully");
+    })
+    .catch((err: any) => {
+      console.error("Error updating product:", err);
+    });
   res.redirect("/admin/products");
 };
 
 /** Deletes a product and removes its matching cart entry when applicable. */
 export const postDeleteProduct = async (req: any, res: any, next: any) => {
   const productId = req.body.productId;
-  // const price = req.body.price;
-  const prods = await getProductsFromFile();
-  const product = prods?.find((prod) => prod?._id === productId);
-  const price = product?.price;
-  await deleteProduct(productId);
-  const userId = req.user._id;
+  await product
+    .findByIdAndDelete(productId)
+    .then(() => {
+      console.log("Product deleted successfully");
+    })
+    .catch((err: any) => {
+      console.error("Error deleting product:", err);
+    });
+  // const userId = req.user._id;
 
-  await deleteCart(productId, userId);
+  // await deleteCart(productId, userId);
 
   res.redirect("/admin/products");
 };
