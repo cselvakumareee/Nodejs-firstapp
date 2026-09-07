@@ -1,0 +1,47 @@
+.form-control {
+  margin: 1rem 0;
+}
+
+.form-control label,
+.form-control input,
+.form-control textarea {
+  display: block;
+  width: 100%;
+}
+
+.form-control label {
+  margin-bottom: 0.35rem;
+  color: #343434;
+  font-weight: 600;
+}
+
+.form-control input,
+.form-control textarea {
+  border: 1px solid #b7b7b7;
+  border-radius: 4px;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  background-color: #fffdf5;
+}
+
+.form-control input:focus,
+.form-control textarea:focus {
+  outline: 2px solid #dbc441;
+  outline-offset: 1px;
+  border-color: #8f7d00;
+}
+
+.btn {
+  border: 1px solid #3e00a1;
+  border-radius: 4px;
+  padding: 0.55rem 1rem;
+  color: #fff;
+  background-color: #3e00a1;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  background-color: #2d0075;
+}

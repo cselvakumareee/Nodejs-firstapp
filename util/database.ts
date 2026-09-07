@@ -14,12 +14,10 @@
 //   client
 //     .connect()
 //     .then(() => {
-//       console.log("MongoDB connected successfully");
 //         _db = client.db();
 //       callback();
 //     })
 //     .catch((err: any) => {
-//       console.log("MongoDB connection error:", err);
 //       throw err;
 //     });
 // };

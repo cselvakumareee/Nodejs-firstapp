@@ -9,7 +9,6 @@
         <% if (prods.length > 0) { %>
             <div class="grid">
                 <% for (let product of prods) { %>
-                    <% console.log('Current product structure:', product); %>
                     <article class="card product-item">
                         <header class="card__header">
                             <h1 class="product__title"><%= product.title %></h1>
@@ -24,7 +23,9 @@
                         </div>
                         <div class="card__actions">
                             <a href="/products/<%= product._id %>" class="btn">View Details</a>
+                            <% if(isAuthenticated) { %>
                             <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                            <% } %>
                         </div>
                     </article>
                 <% } %>

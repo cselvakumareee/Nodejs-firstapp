@@ -8,17 +8,22 @@ export const getAddProduct = (req: any, res: any, next: any) => {
     pageTitle: "Add Product",
     path: req.path,
     editing: false,
+    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
 /** Creates a product from the submitted form data and redirects to the shop. */
 export const postAddProduct = async (req: any, res: any, next: any) => {
+  if (!req.session?.user?._id) {
+    return res.redirect("/login");
+  }
+
   const receivedProduct = {
     title: req.body.title,
     imageUrl: req.body.imageUrl,
     description: req.body.description,
     price: req.body.price,
-    userId: req.user._id,
+    userId: req.session.user._id,
   };
   await product
     .create(receivedProduct)
@@ -37,7 +42,7 @@ export const getEditProduct = async (req: any, res: any, next: any) => {
   if (!editMode) {
     return res.redirect("/");
   }
-  const productId = req.params.productId;
+  const productId = req.params.productId; //productId --defined in routes/admin.ts
   const prod = await product.findById(productId).exec();
   if (prod) {
     res.render("admin/edit-product", {
@@ -45,6 +50,7 @@ export const getEditProduct = async (req: any, res: any, next: any) => {
       path: "admin/edit-product",
       editing: editMode,
       product: prod,
+      isAuthenticated: req.session.isLoggedIn,
     });
   }
 };
@@ -59,7 +65,6 @@ export const adminProductsController = async (
     .find()
     // .populate("userId")
     .then((products) => {
-      console.log("fetched", products);
       return products;
     })
     .catch((err) => {
@@ -73,6 +78,7 @@ export const adminProductsController = async (
     formCss: true,
     productCSS: true,
     activeAdminProducts: true,
+    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -106,9 +112,6 @@ export const postDeleteProduct = async (req: any, res: any, next: any) => {
     .catch((err: any) => {
       console.error("Error deleting product:", err);
     });
-  // const userId = req.user._id;
-
-  // await deleteCart(productId, userId);
 
   res.redirect("/admin/products");
 };
