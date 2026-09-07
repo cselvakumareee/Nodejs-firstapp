@@ -53,23 +53,23 @@ app.use(pageNotFoundController);
 mongoose
   .connect(MONGODB_URI, { dbName: "shop" })
   .then(() => {
-    User.findOne().then((user: any) => {
-      if (!user) {
-        const user = new User({
-          name: "selva",
-          email: "selva@test.com",
-          cart: { items: [] },
-        });
-        user
-          .save()
-          .then(() => {
-            console.log("User created successfully");
-          })
-          .catch((err: any) => {
-            console.error("Error creating user:", err);
-          });
-      }
-    });
+    // User.findOne().then((user: any) => {
+    //   if (!user) {
+    //     const user = new User({
+    //       name: "selva",
+    //       email: "selva@test.com",
+    //       cart: { items: [] },
+    //     });
+    //     user
+    //       .save()
+    //       .then(() => {
+    //         console.log("User created successfully");
+    //       })
+    //       .catch((err: any) => {
+    //         console.error("Error creating user:", err);
+    //       });
+    //   }
+    // });
 
     app.listen(3000, () => {
       console.log("Server running at http://localhost:3000/");

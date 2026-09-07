@@ -22,7 +22,7 @@ export const postLogin = async (req: any, res: any, next: any) => {
     req.session.isLoggedIn = true;
     req.session.user = {
       _id: user._id.toString(),
-      name: user.name,
+      // name: user?.name,
       email: user.email,
     };
 
@@ -44,4 +44,39 @@ export const postLogout = (req: any, res: any, next: any) => {
     }
     res.redirect("/");
   });
+};
+
+export const getSignup = (req: any, res: any, next: any) => {
+  res.render("auth/signup", {
+    path: "/signup",
+    pageTitle: "Signup",
+    isAuthenticated: false,
+  });
+};
+
+export const postSignup = async (req: any, res: any, next: any) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const confirmPassword = req.body.confirmPassword;
+  await User.findOne({ email: email })
+    .exec()
+    .then((userDoc: any) => {
+      console.log("userDoc:", userDoc);
+      if (userDoc) {
+        return res.redirect("/signup");
+      }
+      const user = new User({
+        email: email,
+        password: password,
+        cart: { items: [] },
+      });
+      return user.save();
+    })
+    .then((result: any) => {
+      res.redirect("/login");
+    })
+    .catch((err: any) => {
+      console.error("Error during signup:", err);
+      next(err);
+    });
 };
