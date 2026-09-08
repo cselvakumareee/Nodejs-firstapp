@@ -19,7 +19,6 @@ export const getProducts = async (req: any, res: any, next: any) => {
     prods,
     pageTitle: "All Products",
     path: "/products",
-    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -35,7 +34,6 @@ export const getProduct = async (req: any, res: any, next: any) => {
     product: prod,
     pageTitle: prod.title,
     path: "/products",
-    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -54,7 +52,6 @@ export const getIndex = async (req: any, res: any, next: any) => {
     prods,
     pageTitle: "Shop",
     path: "/",
-    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -84,7 +81,6 @@ export const getOrdersController = async (req: any, res: any, next: any) => {
         pageTitle: "Orders",
         path: "/orders",
         orders: orders,
-        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -104,13 +100,15 @@ export const postOrderController = async (req: any, res: any, next: any) => {
       throw new Error("User not found");
     }
 
-    const actualProducts = user.cart?.items.map((item: any) => ({
-      product: { ...item.productId._doc },
-      quantity: item.quantity,
-    }));
+    const actualProducts = (user.cart?.items ?? [])
+      .filter((item: any) => item.productId)
+      .map((item: any) => ({
+        product: { ...item.productId._doc },
+        quantity: item.quantity,
+      }));
     const order = {
       user: {
-        name: req.session.user.name,
+        // name: req.session.user.name,
         userId: req.session.user._id,
       },
       products: actualProducts,
@@ -130,26 +128,31 @@ export const postOrderController = async (req: any, res: any, next: any) => {
 
 /** Loads cart contents with their matching products and renders the cart page. */
 export const getCartController = async (req: any, res: any, next: any) => {
-  const user = await User.find()
-    .populate("cart.items.productId")
-    .then((products) => {
-      const actualProducts = products[0]?.cart?.items.map((item: any) => {
-        return {
-          productData: item.productId,
-          qty: item.quantity,
-        };
-      });
-      res.render("shop/cart", {
-        pageTitle: "Cart",
-        path: "/cart",
-        products: actualProducts,
-        isAuthenticated: req.session.isLoggedIn,
-      });
-    })
-    .catch((err) => {
-      console.error("Error fetching user:", err);
-      return null;
+  try {
+    const user = await User.findById(req.session.user._id)
+      .populate("cart.items.productId")
+      .exec();
+
+    if (!user) {
+      return next(new Error("User not found"));
+    }
+
+    const products = (user.cart?.items ?? [])
+      .filter((item: any) => item.productId)
+      .map((item: any) => ({
+        productData: item.productId,
+        qty: item.quantity,
+      }));
+
+    res.render("shop/cart", {
+      pageTitle: "Cart",
+      path: "/cart",
+      products,
     });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    next(err);
+  }
 };
 
 /** Removes a selected product from the cart and redirects to the cart page. */

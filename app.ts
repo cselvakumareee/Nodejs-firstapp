@@ -12,15 +12,18 @@ import shopRoutes from "./routes/shop";
 import { rootDir } from "./util/path";
 import session from "express-session";
 import MongoDBStoreFactory from "connect-mongodb-session";
+import csurf from "csurf";
 
 import path from "path/win32";
 import { pageNotFoundController } from "./controller/error";
 import mongoose from "mongoose";
 import { User } from "./models/user";
+import flash from "connect-flash";
 
 const app = express();
 app.set("view engine", "ejs");
 app.set("views", "views");
+const csrfProtection = csurf();
 
 const MONGODB_URI =
   "mongodb+srv://cselvakumareee_db_user:8FVP6mh7FYJ8bRHq@cluster0.1g9tmeq.mongodb.net/?appName=Cluster0";
@@ -41,7 +44,14 @@ app.use(
     store: sessionStore,
   }),
 );
+app.use(csrfProtection);
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
 
+  next();
+});
+app.use(flash());
 //filter paths if url will be admin then it will go to adminRoutes else it will go to shopRoutes
 app.use("/admin", adminRoutes);
 

@@ -9,21 +9,22 @@ import {
   postOrderController,
   getOrdersController,
 } from "../controller/shop";
+import { isAuth } from "../middleware/is-auth";
 
 const router = express.Router();
 router.get("/", getIndex);
 
-router.post("/cart", postCartController);
+router.post("/cart", isAuth, postCartController);
 
-router.post("/cart-delete-item", postDeleteController);
+router.post("/cart-delete-item", isAuth, postDeleteController);
 
 router.get("/products", getProducts);
 
 router.get("/products/:productId", getProduct);
 
-router.get("/orders", getOrdersController);
-router.post("/orders", postOrderController);
+router.get("/orders", isAuth, getOrdersController);
+router.post("/orders", isAuth, postOrderController);
 
-router.get("/cart", getCartController);
+router.get("/cart", isAuth, getCartController);
 
 export default router;

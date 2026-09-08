@@ -4,6 +4,5 @@ export const pageNotFoundController = (req: any, res: any, next: any) => {
     pageTitle: "Page Not Found",
     path: req.path,
     active404: true,
-    isAuthenticated: req.session.isLoggedIn,
   });
 };

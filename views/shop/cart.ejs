@@ -12,6 +12,7 @@
                     <li class="card product-item">
                         <p><%= product.productData.title %> (<%= product.qty %>)</p>
                         <form action="/cart-delete-item" method="post">
+                            <%- include('../includes/csrf-token.ejs') %>
                             <input type="hidden" value="<%= product.productData._id %>" name="productId"/>
                             <button type="submit" class="btn">Delete</button>
                         </form>
@@ -19,6 +20,7 @@
                 <% } %>
                 </ul>
                 <form action="/orders" method="post">
+                    <%- include('../includes/csrf-token.ejs') %>
                     <button type="submit" class="btn">Order Now</button>
                 </form>
         <% } else { %>

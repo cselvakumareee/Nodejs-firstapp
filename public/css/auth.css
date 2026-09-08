@@ -9,6 +9,12 @@
   box-shadow: 0 8px 24px rgba(62, 0, 161, 0.1);
 }
 
+.error-message {
+  color: #d32f2f;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 .login-form .btn {
   width: 100%;
   margin-top: 0.5rem;

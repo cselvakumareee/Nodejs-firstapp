@@ -6,4 +6,14 @@ declare global {
   }
 }
 
+declare module "express-session" {
+  interface SessionData {
+    isLoggedIn?: boolean;
+    user?: {
+      _id: string;
+      email: string;
+    };
+  }
+}
+
 export {};
